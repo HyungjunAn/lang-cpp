@@ -1,0 +1,459 @@
+강석민 강사
+smkang@codenuri.co.kr
+
+수업자료
+	https://cafe.naver.com/cppmaster?iframe_url=/ArticleRead.nhn%3Fclubid=11345129%26page=14%26menuid=56%26boardtype=L%26articleid=5250%26referrerAllArticles=false
+	https://cafe.naver.com/cppmaster?iframe_url=/ArticleRead.nhn%3Fclubid=11345129%26page=14%26menuid=56%26boardtype=L%26articleid=5253%26referrerAllArticles=false
+	https://cafe.naver.com/cppmaster?iframe_url=/ArticleRead.nhn%3Fclubid=11345129%26page=14%26menuid=56%26boardtype=L%26articleid=5255%26referrerAllArticles=false
+	https://cafe.naver.com/cppmaster?iframe_url=/ArticleRead.nhn%3Fclubid=11345129%26page=14%26menuid=56%26boardtype=L%26articleid=5261%26referrerAllArticles=false
+	https://cafe.naver.com/cppmaster?iframe_url=/ArticleRead.nhn%3Fclubid=11345129%26page=14%26menuid=56%26boardtype=L%26articleid=5258%26referrerAllArticles=false
+	https://cafe.naver.com/cppmaster/5187
+	5/7 ~ 5/15 자료 이용
+
+version에 따른 컴파일 옵션
+-std=c++11
+-std=c++14
+-std=c++1z or 17
+-std=c++2a / 표준이 확정되고 나면 숫자로 바뀜
+
+
+2진수 표기 가능
+- 11(2) := 0b11
+
+숫자 자릿수 구분 가능
+- 1000000 := 1'000'000;
+
+auto 타입
+- 우변의 표현식으로 좌변의 타입 결정
+
+declare
+
+range for
+for (auto& n : x)
+	cout << n << endl; 
+
+멤버함수 원리
+p1.f(1, 2); // compile시 set(&p1, 1, 2)와 유사한 형태로 변경됨
+- this가 인자로 사용된다고 생각하면 됨
+- static으로 만들면 this 안 씀
+
+멤버함수를 담는 함수 포인터
+- int(SomeClass::*f)(int) = &SomeClass::foo;
+멤버함수를 담은 함수 포인터를 호출하는 방법
+- (var.*f)(0)
+	- .* 연산자(포인터면 ->*) // pointer to member
+	- ()없으면 연산자 우선 순위 때문에 에러
+
+C의 callback을 C++ 스타일로 디자인할때는 static이 필요함
+
+Class 기반 callback(static) 사용 시 this를 사용하는 대표 기법
+- 1. void* 인자를 추가
+- 2. 공통 key를 관리해서 맵핑 테이블을 만듦
+
+큰 그림
+- 2차 API : C++, JAVA | Class 기반 (static 함수를 콜백으로 사용 / this가 없어지기에 이를 해결해야 함)
+- 1차 API	: C					| 함수 기반 (콜백 사용)
+- OS			: C
+
+생성자는 명시적 호출이 불가능함
+- 단 void* operator new(size_t sz, void* p) { return p; }와 같은 형태로 간접적 호출이 가능해짐
+- 이미 C++ 표준에 Placement new라 부르는 operator new가 존재함: "new(&p) SomeType" 형태로 쓰면 됨
+- Placement new의 철학은 new의 메커니즘에서 생성자 호출을 분리한 것
+
+메모리 할당과 생성자 호출을 분리했으면 소멸자 호출과 메모리 해제도 분리하는 것을 권장
+
+자원을 갖는 객체의 버퍼 복사, 크기 확장 등에서는 생성자가 필요 없는 크기 까지는 메모리만 할당해야 함
+
+
+컴파일 타임 예외처리 static_assert()
+- 안전한 라이브러리 제작을 위해서는 필수라 보면 됨
+
+클래스의 memset에서 가상함수 테이블이 0으로 초기화되면 안되기에 static_assert로 막아야 함
+- static_assert( ! is_polymorphic<T>::value, "~~~");
+
+typedef 대신 using 사용하기
+- template에 대한 이름 재지정이 가능
+
+template
+- template parameter: 컴파일 타임에 전달
+- call parameter		: 런타임에 전달
+
+template 사용시 주의점
+- 임베디드 환경에서 코드 양이 늘어날 수 있음
+
+T::심볼
+- 심볼을 무조건 값으로 해석
+- type으로 해석하게 하려면 "typename"을 붙혀줘야함
+
+Class에는 멤버 변수, 멤버 함수 그리고 멤버 타입이 있다.
+멤버 타입
+- ::value_type
+	- STL에서 자신이 저장하는 타입을 알려주기 위한 타입
+- ::size_type
+	- STL에서 자신의 크기 타입을 알려주기 위한 타입
+
+template class 생성 시 한번도 사용되지 않는 멤버 함수는 코드로 생성되지 않음
+
+보통 if는 runtime에서 수행되지만 "if constexpr( false )" 형태의 경우 컴파일 타임에 수행됨
+
+template의 부분 특수화 / 특수화 | (primary / partial specialization /  specialization) template
+- 부분: 임의 타입은 아니고 몇 가지 정보가 결정 되었을 때(복수 타입 중 하나를 알거나 포인터이거나 등등)
+- 특수화: 타입이 확실히 결정되어 있을 때
+- 부분 특수화가 무지막지하게 응용됨
+- 부분 특수화의 경우 primary의 template 인자 갯수와 일치할 필요 없음
+
+type traits
+- T의 다양한 속성을 조사하는 기술
+- 좋긴한데 코드가 길어지기에 using으로 간략화 함
+
+
+메타 함수
+- 컴파일 시간에 의미상으로 함수와 같이 호출됨
+
+컴파일 시간 상수 Vs. 실행 시간 상수
+	int n = 10;
+	const int c1 = n;  // 실행 시간 상수
+	const int c2 = 10; // 컴파일 시간 상수
+
+constexpr 
+- 컴파일 시간 상수를 명시적으로 만들 수 있기에 컴파일 최적화를하기 좋음
+
+상수 멤버 함수
+- 해당 함수에서는 멤버 변수의 값을 바꿀 수 없다
+- 멤버 변수를 바꾸지 않는 함수는 반드시 상수 멤버 함수로 선언할 것을 권장
+	- 객체를 const로 생성했을 때에도 해당 함수를 호출할 수 있게 하기 위해
+	- 선언과 정의 모두에 쓸 것
+
+임시 객체는 사용된 줄이 끝나면 소멸됨
+- 성능상 이점이 있기에 C++ 코딩에 자주 등장함
+- 단 const& 변수에 저장할 경우 해당 변수의 수명만큼 수명이 연장됨
+- 그러나 위의 경우, 변수에 상수성이 생기므로 &&라는 타입을 만들어서 상수성 없이 임시객체를 가리킬 수 있게 됨
+- 값을 반환하는 함수는 반환 시 임시 객체가 반환됨
+
+RVO(Return Value Optimization)
+
+함수의 리턴 타입
+- 값: 임시 객체가 생성되어서 반환
+- 참조: 임시객체를 만들지 말라는 의미 / 지역 변수를 반환하면 안 됨
+
+부모 클래스로의 캐스팅
+- static_cast<Base>		: 임시객체를 생성함
+- static_cast<Base&>	: 가리키기만 함
+
+lvalue Vs. rvalue 
+- l, r 판단은 종합적으로 해야 함("Named rvalue reference is lvalue")
+- enum: rvalue
+
+참조
+- lvalue 참조
+- const lvalue 참조: lvalue / rvalue 모두 참조 가능
+- rvalue 참조: rvalue만 참조
+
+Reference Collapsing
+- 참조의 참조
+- && &&의 경우만 &&가 됨
+- typedef를 안 쓰고 참조의 참조를 만들 수는 없음
+
+Forwarding Reference
+- T&&는 lvalue, rvalue를 모두 받을 수 있음
+- forward<T>(d): d가 l이면 copy / r이면 move
+
+const int& Vs. T&&
+- const int&: 상수성이 추가됨, 수정 불가능, 단일 함수
+- T&&: 상수성이 없음, 수정 가능, l/r에 따른 함수가 따로 생성
+
+Perfact Forwarding(완벽한 전달)
+- 어떤 타입이든 인자로 전달 받은 것을 어떤 변화도 없이 다른 함수에게 완벽히 전달하는 기법
+- T&&
+- push 계열보다 emplace 계열 사용을 권장
+
+Move 생성자
+- 임시 객체로 복사 생성을 하는 경우 메모리 재할당을 하지 않게 하는 기법
+- 복사 생성자를 대체하는 개념이 아님
+- move(): static_cast<type &&>()를 대체
+	- swap 등에서 불필요한 메모리 할당을 막음 / 성능 향상
+	- move로 만드는 복사 생성자 또는 대입 연산자 안에서의 복사 생성자, 대입 연산자는 역시 move로 묶어야 함
+		- string 등의 대입 시 빼먹기 쉬움
+- move 생성자를 만들기로 했으면 예외가 없음을 뜻하는 noexcept 키워드를 함수 선언부에 표기
+
+자원을 할당하는 생성자의 법칙(Rule of 3)
+- 생성자가 자원을 할당하면 3개의 함수를 만들어야 한다.
+	- 소멸자, 복사 생성자, 대입연산자
+
+Rule of 3 + move(Rule of 5)
+- Rule of 3외에 Move 생성자, Move 대입 또한 만들어야 한다.
+
+copy Vs. move
+- copy, move 생성자가 모두 없으면 move 사용시 컴파일러가 자동으로 move용을 만듦
+- copy만 있으면 move 사용 시 copy를 사용하게 됨
+- 만들려면 둘다 만들고 아닐거면 둘다 만들지 말 것
+
+자원 할당을 사용자 클래스에서 직접 하지 말 것을 권장(Rule of 0)
+- 직접 해버리면 생성자, move, copy 대입 등 만들 것들이 너무 많음
+- 이미 자원 관리를 해주는 것들을 쓸 것
+	- char*	=> string
+	- int*	=> vector<int>  
+	- int* 	=> shared_ptr<int>
+
+move가 함께한다면 setter 계열 구현 시 call by value가 나쁘지 않을 수 있음
+- void setData(Data d) { data = move(d); }
+
+move Vs. forward
+- move(): 무조건 move
+- forward(): l이면 copy / r이면 move
+
+iterator
+- begin, end, size
+- 고전적으로는 멤버 함수처럼 썼으나 일반 함수로 쓰길 권장(배열도 가능)
+- v.begin() -> begin(v) 
+
+range for
+- 컴파일러가 begin, end를 써서 원래 for문을 생성함
+- 즉, 사용자 정의 타입으로 range for를 쓰려면 begin, end가 있어야 함
+
+
+
+위임 생성자
+- C++98/03에서 생성자는 자신의 정의 안에서 또다른 생성자를 호출하여 생성할 수 없음(임식 객체 만드는 표현과 혼동하면 안 됨)
+- 생성자의 인자 옆에 ": func(...)"의 형태로 다른 생성자를 부를 수 있음
+
+클래스 팁
+- 기반 클래스의 함수를 상속 클래스에서 오버로딩하면 기반 클래스의 함수는 가려짐(사용할 수 없음)
+	- 큰 규모의 클래스 상속시 잠재적인 버그를 막음
+	- 기반 클래스의 함수를 사용하고 싶다면 "using Base::foo;"의 형태로 코드를 추가
+
+기반 클래스의 생성자 상속 | C++11
+-	"using Base::Base;"
+
+널포인터
+- C++에서 널포인터를 나타낼때는 반드시 "nullptr"을 쓸 것
+- void* -> char*로의 암시적 변환이 필요한 경우 C는 되지만 C++은 안 됨
+- C++의 NULL 정의
+#ifdef __cplusplus
+	#define NULL 0
+#else
+	#define NULL (void*)0
+#endif
+
+scoped enum
+- 용법: enum class <NAME>
+- 반드시 class 이름과 함께 써야 함
+- 혼동을 막기 위한 것이 주 목적
+- int로 고정됐던 타입을 char 등으로 확장 가능
+
+리터럴 상수의 단위 표기가 가능해짐
+- 10m // operator""m(10)을 호출하게 됨
+- 혼동을 막기위해 되도록 STL 제작 시에만 / 꼭 써야 한다면 이름 앞에 '_'를 붙일 것을 권장
+
+Raw String: 탈출 문자 없이 순수하게 일반 문자열로 만들어주는 함수 
+- ex) string s = R"(C:\aa\bb\cc)";
+- "( 또는 )"를 나타내려면 쌍따옴표, 괄호 사이에 임의 구분자를 넣으면 됨
+	- ex) string s3 = R"**(C:\aa\bb\cc)**";
+- encoding 표현도 가능
+
+delete 키워드: C++11
+- 함수의 인자 자동 캐스팅을 막는 기법
+	- 1. 해당 인자에 맞는 함수 선언만 해두기: 링크 시 에러기에 컴파일 시 막을 수는 없음
+	- 2. 함수 선언 뒤 " = delete;" 추가:  컴파일 시에 에러가 나게 해 줌
+
+default 키워드
+- 컴파일러가 기본 생성자를 만들 수 있도록하는 키워드
+- ex. Point() = default;
+- 선언부에 있어야 함
+- 아무것도 안 하는 기본 생성자가 필요하면 꼭 쓰는 것을 권장
+
+override 키워드
+- 기반 클래스의 가상함수를 재정의한다고 컴파일러에게 알려주는 것
+- 기반 클래스에 오버라이딩할 수 있는 함수가 없으면 에러
+- 오버라이딩으로 생길 수 있는 잠재 버그를 예방
+
+final 키워드
+- 더이상 재정의 못하게 하기 위한 문법
+- 함수 뒤에 쓰면 이후에는 가상함수 재정의 불가
+- 클래스 뒤에 쓰면 더이상 파생 클래스 생성 불가
+
+init if
+if (int ret = foo(); ret == 0) { /*...*/ }
+switch (int n = foo(); n) {/*...*/}
+
+structure binding
+- auto[a, b] = x
+
+일관된 초기화(uniform initialization)
+- 초기화 시 괄호, 중괄호, 괄호x 등 표현법이 여러 가지 였는데 하나로 사용할 수 있게 함
+	- 대신 데이터 손실이 가능한 경우에 error가 나옴(ex. int n{3.4})
+- 앞으로는 초기화 시 val{...} 형태를 쓸 것을 권장 
+- 템플릿의 인자로 보낼 수는 없음
+- direct Vs. copy
+	- direct(직접): '='없이 초기화 / 인자 전달 시에는 중괄호로 보내면 됨
+	- copy(복사)	: '='를 사용해서 초기화
+
+explicit 키워드
+- 직접 초기화로만 객체를 생성할 수 있도록 고정
+- 복사 초기화는 사용할 수 없음
+
+initializer_list
+- 중괄호 표기는 이 initializer_list 타입을 우선시 하게 됨
+
+0 초기화 방법
+- ex. int n2{};
+
+템플릿 Vs auto
+- {1, 2}를 auto에 담을 수 있음
+- {1, 2}를 템플릿에 보낼 수는 없음
+
+
+Type Deduction
+- template T, auto: 우변의 const, volatile, reference 속성이 제거됨
+	- const의 경우 일자에 직접적으로 작용하는 const만 제거됨(const char* const str => const char* str)
+
+- decltype
+	- 단일 변수: 
+	- 변수 with 연산자: 표현식이 lvalue이면 참조 아니면 값 타입
+
+- 함수의 "정확한" 반환 타입 유추
+	- ver 1. decltype(f())  ret = f();
+	- ver 2. decltype(auto) ret = f();
+
+- 후위 반환 탑입의 필요
+	- ex. generic "+" 구현
+	- 결과적으로 auto만 써도 되게 C++14에서 지원
+		ex. auto Add(...) {}
+	- 위의 경우 반환 타입을 정확히 return하기 위해 decltype과 함께 씀
+		ex. decltype(auto) Add(...) {}
+
+람다 표현식
+- ex. foo([](int a, int b) { return a + b; });
+
+- inline과 람다 함수
+	- inline 함수: 함수 호출이 아니라 치환이 되는 원리이지만 함수 포인터에 담을 경우 결국 함수 호출과 같은 상황이 됨
+
+- 함수객체
+	- class에서 괄호 연산자로 정의됨
+	- 템플릿의 변수에 전달할 때 인라인 치환이 가능해짐
+	- 함수가 상태(멤버 변수를 이용한 동작 변경)를 가질 수 있음
+
+- 람다 표현식의 원리는 컴파일 시 함수 객체가 생성되도록 하는 것
+	- C++98부터 있었던 함수 객체를 간단히 쓰게 하기 위한 문법이라고 보면 됨
+	- 이때 컴파일러가 만드는 임시 객체를 "Closure"라고 부름
+	- 람다 표현식의 결과는 임시 객체(rvalue)임
+
+- 람다 표현식의 지역변수 / 멤버 변수 접근
+	- 지역 변수: [] 안에 명시를 하여 사용
+	- 멤버 변수: [] 안에 "this" 포함 
+
+- 람다 표현식을 인자로 받는 가장 좋은 방법: perfact forwarding
+
+constexpr
+- constexpr 상수
+- if constexpr
+- constexpr 함수:
+	- 함수 인자로 컴파일 시간 상수가 전달되면 컴파일 시간에 함수를 수행함
+	- 위 결과를 배열 선언 시 크기로 사용할 수 있음
+
+STL
+- C/C++ 표준에서 배열의 가장 마지막 주소 + 1의 주소는 사용할 수 있다.
+
+- 반복자(iterator)
+	- 포인터와 유사한 자료구조로서 ++, * 연산의 재정의를 통해 임의 자료구조의 선형 검색이 가능하게 함
+
+- 3대 요소
+	- container	: 데이터
+	- iterator 	: 구조에 상관 없이 포인팅이 가능한 반복자
+	- algorithm	: 비멤버 템플릿 함수로 자료 구조에 상관 없이 동작
+		- find / reverse / sort 등
+
+- algorith를 멤버에서 분리함으로써 컴파일 타임에 구현될 함수가 줄어듦
+
+- 프로그램과 컨테이너 사이의 입출력
+	- 입력: 컨테이너 -> 프로그램
+	- 출력: 프로그램 -> 컨테이너
+
+- 반복자의 카테고리
+	- multi pass: 둘 이상의 반복자가 사용되어도 됨(?)
+	- p = p + 5 대신 advance(p, 5) 쓸 것: iterator 종류에 따라 다르게 동작함
+
+- 알고리즘 함수 중 remove Vs. erase
+	- remove: 다음 데이터를 땡김
+	- erase	: 실제로 데이터를 메모리에서 지움(자료 구조마다 특성이 있기에 멤버 함수로 존재함)
+	- 알고리즘은 컨테이너를 알지 못한다.
+
+- 알고리즘에도 있고 멤버 함수에도 있는 함수면 멤버 함수를 쓰는 것을 권장
+
+단위 전략(policy base design)
+- 템플릿 인자로 정책을 담은 클래스(정책 클래스)를 전달해서 사용하는 것
+- 성능저하없이 정책 교체 가능
+- STL의 핵심 설계 원리
+- 정책 클래스
+	- 정책 클래스는 반드시 지켜야 하는 규칙이있음
+
+메모리 할당기
+- allocator<T> ax;		// operator new
+- ax.construct(..);		// constructor
+- ax.destroy(..);			// destructor
+- ax.deallocate(..);	// operator delete
+
+
+unorderd_set<T>
+- tree가 아니라 hash 함수를 이용해서 검색 속도를 높인 자료구조
+- 기본적으로는 hash 함수로 "hash<T>";를 사용함
+- 사용자 타입을 쓰려면 hash를 만들어 줘야 함
+
+스마트 포인터(smart pointer)
+- 객체가 다른 타입의 포인터처럼 사용되는 것
+
+
+- 배열에 대해 간단하게 표기하는 방법
+	- shared_ptr<int[]> p6(new int[10]);
+
+- 관리객체(참조계수)가 사용됨
+	- 표준에는 같은 주소를 두 번 delete 하지 말라고 하지만 컴파일러들이 꼭 그렇게 동작하지는 않음
+	- 메모리 파편화 현상을 줄이기 위해 객체 + 관리객체를 한 번에 할당할 수 있음
+	- shared_ptr<Point> sp = make_shared<Point>(1, 1);
+
+- 스마트 포인터를 쓸거라면 반드시 make_shared 쓰자
+
+- 상호참조를 조심
+
+- weak를 쓸 때는 multi thread를 고려해서 shared_ptr을 추가 생성해서 쓰기
+	- 이때 사용 전에 생성된 ptr의 0 여부를 확인 후 사용
+
+가변인자 템플릿
+- ex. class	: template<typename ... Types> class tuple {};
+- ex. func(): template<typename ... Types> void foo(Types ... args);
+- 이때 Types를 "파라미터 팩"이라 부름
+- 확장(pack expansion)
+
+tuple 구현이 기가 막힘
+- 특히 원소를 꺼내는 거가 예술
+
+decay<T>::type
+- T에서 const, volatile, reference를 제거한 타입 구하기
+- 앞에 typename 쓰는 거 잊지 말기
+
+
+Template으로 재귀를 만들때
+- 탈출 함수를 위에 만들어야 함
+
+
+
+
+// 시험
+RVO
+l, r value에 따른 대입 가능성
+forward: 완벽한 전달자를 위해 사용
+move: 
+auto
+	int x[3] = {1, 2, 3}; 
+	auto  a1 = x; // int *a1
+	auto& a2 = x;	// int(&a2)[3] = x
+explicit: 복사 생성자가 아닌 생성자 직접 호출로만 생성되게 하는 키워드
+smart pointer
+	shared_ptr
+	weak_ptr<T>: shared_ptr<T>의 상호 참조 문제를 해결함
+	unique_ptr
+
+
+
+
+
